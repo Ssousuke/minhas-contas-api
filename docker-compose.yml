@@ -1,0 +1,35 @@
+version: '3.4'
+
+services:
+  db:
+    container_name: minhas_contas_db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - 1433:1433
+ 
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: MinhasContas123
+
+  minhascontas.api:
+    image: ${DOCKER_REGISTRY-}minhascontasapi
+    build:
+      context: .
+      dockerfile: MinhasContas.API/Dockerfile
+
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - DB_HOST=db
+      - DB_NAME=MinhasContas
+      - DB_SA_PASSWORD=MinhasContas123
+    ports:
+      - "8080"
+      - "8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    
+    depends_on:
+     - db
